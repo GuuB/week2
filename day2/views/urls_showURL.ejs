@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><% include ../views/partial/_header %></head>
+
+<body style="font-size:20px; padding:50px; background-color:lemonchiffon">
+    <header style="font-size:30px">Your URL:</header>
+    <main>
+        <div>
+            <p> <%= short %>: <%= long %> </p>
+        </div>
+        <header style="font-size:30px">Edit your URL:</header>
+        <br/>
+        <form action="/urls/<%=short%>/edit" method="POST">
+          <label for="longURL">New URL:</label>
+          <input id="newURL" type="text" name="newURL" style="width: 300px">
+          <input type="submit" value="Edit">
+        </form>
+    </main>
+
+    <footer>
+        <br/>
+        <a href="/urls">Back to list</a>
+
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+<% for (const url in urls) {%>
+  <li>
+    <a href="/urls/<%=url%>"><%= url %>
+    </a>: <%=urls[url]%>
+      <form method="POST" action="/urls/<%=url%>/delete">
+          <input type="submit" value="Delete" style="width:60px">
+      </form>
+      <form method="GET" action="/urls/<%=url%>">
+          <input type="submit" value="Edit" style="width:60px">
+      </form>
+  </li>
+
+<% }%>
