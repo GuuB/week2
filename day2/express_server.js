@@ -4,6 +4,7 @@
 // REQUIREMENTS
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 let urlDB = require("./urlDB");
 
 const app = express();
@@ -11,6 +12,7 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 /*
  * ROUTING FUNCTIONS
@@ -28,32 +30,52 @@ app.get("/", (req, res) => {
 
 // HOME PAGE
 app.get("/urls", (req, res) => {
-  let urls = urlDB.getAll();
-  res.render("urls_index", {urls: urls});
+  let database = {
+    username: req.cookies["username"],
+    urls: urlDB.getAll()
+  }
+  res.render("urls_index", {database: database});
 });
 
 // PAGE TO CREATE NEW SHORT-URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let database = {
+    username: req.cookies["username"],
+    urls: urlDB.getAll()
+  }
+  res.render("urls_new", {database: database});
 });
 
 // PAGE SHOWS NEW SHORT-URL
 app.get("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   let longURL = urlDB.urlDatabase[shortURL];
+  let database = {
+    username: req.cookies["username"],
+    urls: urlDB.getAll()
+  }
   if (urlDB.urlDatabase[shortURL]) {
-    res.render("urls_showURL", {short: shortURL, long: longURL});
+    res.render("urls_showURL", {short: shortURL, long: longURL, database: database});
   }
   else {
     res.status(404).send("URL not found!");
   }
 });
 
-// REDIRECTS USER TO LONG-URL
+// REDIRECTS USER TO LONG-URL PAGE
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDB.urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
+// REGISTER PAGE
+app.get("/register", (req, res) => {
+  let database = {
+    username: req.cookies["username"],
+    urls: urlDB.getAll()
+  }
+  res.render("urls_register", {database: database});
+})
 
 // RECEIVES DATA POSTED FROM URLS/NEW
 app.post("/urls", (req, res) => {
@@ -61,17 +83,42 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls");
 });
 
+// DELETES DATA AND REDIRECTS TO HOME PAGE
 app.post("/urls/:shortURL/delete", (req, res) => {
   urlDB.urlDatabase = urlDB.destroy(req.params.shortURL);
-  console.log(urlDB.urlDatabase);
   res.redirect("/urls");
 });
 
+// UPDATES DATA AND REDIRECTS TO HOME PAGE
 app.post("/urls/:shortURL/edit", (req, res) => {
   let id = req.body.newURL;
   let shortURL = req.params.shortURL;
   urlDB.urlDatabase = urlDB.update(shortURL, id);
   res.redirect("/urls")
+})
+
+// REDIRECTS TO LOGIN PAGE AFTER CREATING USER
+app.post("/register", (req, res) => {
+  let database = {
+    username: req.cookies["username"],
+    urls: urlDB.getAll()
+  }
+  urlDB.userDatabase[req.body.username] = req.body.username;
+  res.cookie("username", req.body.username);
+  res.redirect("/");
+})
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
+
+app.post("/login", (req, res) => {
+  const user = req.body.username;
+  if (urlDB.userDatabase[user]) {
+    res.cookie("username", user);
+  }
+  res.redirect("/");
 })
 
 /*

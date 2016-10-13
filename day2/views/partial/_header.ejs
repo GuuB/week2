@@ -1,1 +1,15 @@
-<h1 style="text-align:center; font-size:50px">URL shortener</h1>
+  <h1 style="text-align:center; font-size:50px">URL shortener</h1>
+  <% if (!database['username']) { %>
+    <form method="POST" action="/login" style="text-align:right">
+      <label for="username">Login:</label>
+      <input id="username" type="text" name="username" placeholder="username" style="width: 200px">
+      <input type="submit" value="Submit">
+    </form>
+    <p style="text-align:right">Don't have an account? <a href="/register">Register</a></p>
+  <% } else {%>
+    <p style="text-align:right">USER: <a style="color:red"><%=database['username']%></a></p>
+    <form method="POST" action="/logout"style="text-align:right">
+      <input type="submit" value="Log Out" style="width:60px">
+    </form>
+  <% }%>
+<br/>

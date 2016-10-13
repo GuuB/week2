@@ -1,7 +1,7 @@
-<% for (const url in urls) {%>
+<% for (let url in database['urls']) {%>
   <li>
     <a href="/urls/<%=url%>"><%= url %>
-    </a>: <%=urls[url]%>
+    </a>: <%=database['urls'][url]%>
       <form method="POST" action="/urls/<%=url%>/delete">
           <input type="submit" value="Delete" style="width:60px">
       </form>

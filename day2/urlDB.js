@@ -1,11 +1,19 @@
 //               URL SHORTENER DATABASE & FUNCTIONS
 
+// USER DATABASE
+const userDatabase = {}
 
-// DATABASE
+// URL DATABASE
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// DATABASE
+const database = {
+  'urlDatabase': urlDatabase,
+  'userDatabase': userDatabase
+}
 
 // FUNCTION RETURNS RANDOM STRING
 function generateRandomString() {
@@ -48,11 +56,13 @@ function destroy(shortURL) {
 
 // FUNCTIONS THAT ARE EXPORTED
 module.exports = {
+  userDatabase: userDatabase,
   urlDatabase: urlDatabase,
   getAll: getAll,
   get: get,
   add: add,
   update: update,
   destroy: destroy,
-  generateRandomString: generateRandomString
+  generateRandomString: generateRandomString,
+  database: database
 }
