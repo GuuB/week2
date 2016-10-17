@@ -39,18 +39,15 @@ const generateRandomString = function() {
 const updateUrlDB = (db) => {
   for (let x in db) {
     for (let y in db[x]['userUrls']) {
-      console.log(db[x]['userUrls'][y]);
       if (!urlDB[y]) {
         urlDB[y] = db[x]['userUrls'][y];
       }
     }
   }
-  console.log(urlDB);
 }
 
 // FUNCTION ADDS USER TO DATABASE
 const addUser = (randomId, email, password) => {
-  // FIX FOR ID BEING THE SAME
   if (db[randomId] === true) {
     return false;
   } else if (email === undefined) {
@@ -70,8 +67,7 @@ const addUser = (randomId, email, password) => {
   }
 };
 
-//FIX
-// FUNCTION FINDS USER // DOESNT WORK -> RETURNS FALSE ALWAYS
+// FUNCTION FINDS USER
 const checkUser = (email, password) => {
   for (var x in db) {
     if (db[x]['email'] === email && bcrypt.compareSync(password, db[x]['password']) === true) {
@@ -81,7 +77,6 @@ const checkUser = (email, password) => {
   return false;
 }
 
-// FIX
 // FUNCTION CREATES NEW KEY(SHORT-URL) AND LONG-URL
 const add = function(shortUrl, longUrl, user_id) {
   for (z in db){
@@ -90,26 +85,29 @@ const add = function(shortUrl, longUrl, user_id) {
       return true; // functions that change data return true on success
     }
   }
-  console.log("no");
   return false;
 };
 
-//FIX
 // FUNCTION UPDATES LONG-URL AT KEY
 const update = function(shortUrl, editedUrl, user_id) {
-  //for (z in db){
-
-  db[user_id]['userUrls'][shortUrl] = editedUrl;
-  return db;
+  for (let z in db) {
+    if (user_id === db[z]['id']) {
+      for (let i in db[z]['userUrls']) {
+        if (shortUrl === i) {
+          db[z]['userUrls'][i] = editedUrl;
+          return db;
+        }
+      }
+    }
+  }
 }
 
-// FIX
 // FUNCTION DELETES KEY AND ELEMENT
 const destroy = function(shortUrl, user_id) {
-  //for (z in db){
-
-  if (db[shortUrl]['userUrls'][shortUrl]) {
-    delete db[shortUrl]['userUrls'][shortUrl];
+  for (let z in db) {
+    if (db[z]['userUrls'][shortUrl]) {
+      delete db[z]['userUrls'][shortUrl];
+    }
   }
 };
 
@@ -150,45 +148,44 @@ app.get("/urls/new", (req, res) => {
 // RECEIVES DATA POSTED FROM URLS/NEW
 app.post("/urls/new", (req, res) => {
   add(generateRandomString(req.body.longURL), req.body.longURL, req.session.user_id);
+  updateUrlDB(db);
   res.redirect("/");
 });
 
 // PAGE SHOWS NEW SHORT-URL
-// app.get("/urls/:id", (req, res) => {
-//   let shortURL = req.params.id;
-//   let longURL = [shortURL];
-//   let database = {
-//     'user_id': req.session.user_id,
-//     'urls': db
-//   }
-//   if (urlDatabase[shortURL]) {
-//     res.render("urls_showURL", {short: shortURL, long: longURL, database: database});
-//   }
-//   else {
-//     res.status(404).send("URL not found!");
-//   }
-// });
+app.get("/urls/:id", (req, res) => {
+  let shortUrl = req.params.id;
+  let longUrl;
+  for (let x in urlDB) {
+    if (shortUrl === x) {
+      longUrl = urlDB[x];
+      let database = {
+        'user_id': req.session.user_id,
+        'userUrls': db
+      };
+      res.render("urls_showURL", {short: shortUrl, long: longUrl, database: database});
+    }
+  }
+  res.status(404).send("URL not found!");
+});
+
+// UPDATES DATA AND REDIRECTS TO HOME PAGE
+app.post("/urls/:shortUrl/edit", (req, res) => {
+  let editedUrl = req.body.newUrl;
+  let shortUrl = req.params.shortUrl;
+  update(shortUrl, editedUrl, req.session.user_id);
+  updateUrlDB(db);
+  res.redirect("/urls")
+});
 
 // REDIRECTS USER TO LONG-URL PAGE
 app.get("/u/:shortURL", (req, res) => {
   let longURL;
-  if (req.session.user_id) {
-    for (let x in db) {
-      if (x === req.session.user_id) {
-        for (let y in db[x]['userUrls']) {
-          if (y === req.params.shortURL) {
-            longURL = db[x]['userUrls'][y];
-          }
-        }
-      }
-    }
-  } else {
     for (let y in urlDB) {
       if (y === req.params.shortURL) {
         longURL = urlDB[y];
       }
     }
-  }
   res.redirect(longURL);
 });
 
@@ -210,7 +207,7 @@ app.post("/register", (req, res) => {
     req.session.user_id = randomId;
     res.redirect("/");
   } else {
-    res.statusCode = 400; // NOT SURE IF WORKS
+    res.status(400).send("Invalid username!");
     res.redirect("/register");
   }
 });
@@ -223,6 +220,7 @@ app.get("/login", (req, res) => {
   res.render("urls_login", {database: database});
 });
 
+// RESPONSE TO LOGIN
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -234,7 +232,7 @@ app.post("/login", (req, res) => {
       }
     }
   } else {
-    res.statusCode = 403; // NOT SURE IF WORKS
+    res.status(403).send("username or password incorrect!");
     res.redirect("/login");
   }
 });
@@ -242,22 +240,16 @@ app.post("/login", (req, res) => {
 // DELETES DATA AND REDIRECTS TO HOME PAGE
 app.post("/urls/:shortUrl/delete", (req, res) => {
   destroy(req.params.shortUrl, req.params.shortURL);
+  updateUrlDB(db);
   res.redirect("/urls");
 });
 
-// UPDATES DATA AND REDIRECTS TO HOME PAGE
-app.post("/urls/:shortUrl/edit", (req, res) => {
-  let editedUrl = req.body.newUrl;
-  let shortURL = req.params.shortUrl;
-  update(shortUrl, editiedUrl, req.session.user_id);
-  res.redirect("/urls")
-})
-
+// LOGOUT
 app.post("/logout", (req, res) => {
   updateUrlDB(db);
   req.session = null;
   res.redirect("/");
-})
+});
 
 /*
  * END OF ROUTING
