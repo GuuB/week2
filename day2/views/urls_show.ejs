@@ -1,13 +1,30 @@
-<% for (let url in database['urls']) {%>
-  <li>
-    <a href="/urls/<%=url%>"><%= url %>
-    </a>: <%=database['urls'][url]%>
-      <form method="POST" action="/urls/<%=url%>/delete">
-          <input type="submit" value="Delete" style="width:60px">
-      </form>
-      <form method="GET" action="/urls/<%=url%>">
-          <input type="submit" value="Edit" style="width:60px">
-      </form>
-  </li>
+<% if (!database['user_id']) {%>
+  <% for (let url in database['publicUrls']) {%>
+    <li>
+      <%= url %>: <a href="<%=database['publicUrls'][url]%>">
+        <%=database['publicUrls'][url]%></a>
+    </li>
+  <% }%>
 
+<% } else {%>
+  <% for (let x in database['userDB']) {%>
+    <% if (database['user_id'] === x) {%>
+      <% for (let y in database['userDB'][x]['userUrls']) {%>
+        <li>
+          <%= y %>: <a href="<%=database['userDB'][x]['userUrls'][y]%>">
+            <%=database['userDB'][x]['userUrls'][y]%></a>
+          <form method="GET" action="/urls/<%=y%>">
+              <input type="submit" value="Edit" style="width:60px">
+          </form>
+          <form method="POST" action="/urls/<%=y%>/delete">
+              <input type="submit" value="Delete" style="width:60px">
+          </form>
+        </li>
+      <% }%>
+    <% }%>
+  <% }%>
+  <footer>
+    <br/>
+    <a href="/urls/new">Create new</a>
+  </footer>
 <% }%>

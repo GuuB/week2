@@ -4,12 +4,12 @@
     <h1 style="text-align:center; font-size:50px">URL shortener</h1>
   </head>
   <body style="font-size:20px; padding:50px; background-color:lemonchiffon">
-    <form action="/register" method="POST" style="margin:150px;">
-      <header style="font-size:30px"><b>Create user:</b></header>
+    <form action="/login" method="POST" style="margin:150px;">
+      <header style="font-size:30px"><b>Login:</b></header>
       <br/>
       <label for="email">Enter your email:</label>
       <br/>
-      <input id="email" type="email" name="email" style="width: 300px">
+      <input id="email" type="email" name="email" style="width:300px">
       <br/>
       <label  for="password">Enter password:</label>
       <br/>
@@ -17,7 +17,7 @@
       <br/>
       <input type="submit" value="Create">
     </form>
-    <p style="text-align:right; font-size:15px">Already have an account? <a href="/login">Login</a></p>
+    <p style="text-align:right; font-size:15px">Don't have an account? <a href="/register">Register</a></p>
     <footer>
         <br/>
         <a href="/urls">Back to list</a>
